@@ -197,6 +197,13 @@ class WSDL {
 
     for (var ns in schemas) {
       var schema = schemas[ns];
+      for (var i = 0; i < schema.includes.length; i += 1) {
+        if (schema.includes[i].location.startsWith('..')) {
+          schema.includes[i].location = url.resolve(this.uri.replace('?xsd','/xsd'), schema.includes[i].location).replace('/xsd','?xsd');
+        } else if (schema.includes[i].location.indexOf('/') === -1) {
+          schema.includes[i].location = this.uri.substring(0, this.uri.lastIndexOf('/') + 1) + schema.includes[i].location;
+        }
+      }
       includes = includes.concat(schema.includes || []);
     }
 
