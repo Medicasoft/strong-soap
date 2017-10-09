@@ -193,35 +193,44 @@ class Element {
       (elementType === 'simpleType' || elementType === 'type')) {
       return xsd.getBuiltinType(name);
     }
-    var schema = schemas[nsURI];
-    if (!schema) {
-      debug('Schema not found: %s (%s)', qname, elementType);
-      return null;
-    }
+    var findType = function(name, elementType, schema) {
+      var found = null;
+      switch (elementType) {
+        case 'element':
+          found = schema.elements[name];
+          break;
+        case 'type':
+          found = schema.complexTypes[name] || schema.simpleTypes[name];
+          break;
+        case 'simpleType':
+          found = schema.simpleTypes[name];
+          break;
+        case 'complexType':
+          found = schema.complexTypes[name];
+          break;
+        case 'group':
+          found = schema.groups[name];
+          break;
+        case 'attribute':
+          found = schema.attributes[name];
+          break;
+        case 'attributeGroup':
+          found = schema.attributeGroups[name];
+          break;
+      }
+      return found;
+    };
+
+    var schema;
     var found = null;
-    switch (elementType) {
-      case 'element':
-        found = schema.elements[name];
+    for (var key in schemas) {
+      schema = schemas[key];
+      found = findType(name, elementType, schema);
+      if (found) {
         break;
-      case 'type':
-        found = schema.complexTypes[name] || schema.simpleTypes[name];
-        break;
-      case 'simpleType':
-        found = schema.simpleTypes[name];
-        break;
-      case 'complexType':
-        found = schema.complexTypes[name];
-        break;
-      case 'group':
-        found = schema.groups[name];
-        break;
-      case 'attribute':
-        found = schema.attributes[name];
-        break;
-      case 'attributeGroup':
-        found = schema.attributeGroups[name];
-        break;
+      }
     }
+
     if (!found) {
       debug('Schema %s not found: %s %s', elementType, nsURI, nsName);
       return null;
