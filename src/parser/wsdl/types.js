@@ -19,8 +19,9 @@ class Types extends WSDLElement {
     if (!this.schemas.hasOwnProperty(targetNamespace)) {
       this.schemas[targetNamespace] = child;
     } else {
-      g.error('Target namespace "%s" already in use by another Schema',
-        targetNamespace);
+      this.schemas[targetNamespace].children = this.schemas[targetNamespace].children.concat(child.children);
+      this.schemas[targetNamespace].includes = this.schemas[targetNamespace].includes.concat(child.includes);
+      // g.error('Target namespace "%s" already in use by another Schema', targetNamespace);
     }
   };
 }
