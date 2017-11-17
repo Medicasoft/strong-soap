@@ -89,8 +89,8 @@ class Client extends Base {
         options = temp;
       }
       self._invoke(operation, args, location,
-        function(error, result, raw, soapHeader) {
-          callback(error, result, raw, soapHeader);
+        function(error, result, raw, soapHeader, requestXML) {
+          callback(error, result, raw, soapHeader, requestXML);
         }, options, extraHeaders);
     };
   }
@@ -263,7 +263,7 @@ class Client extends Base {
       debug('client response. response: %j body: %j', response, body);
 
       if (err) {
-        callback(err);
+        callback(err, xml);
       } else {
 
         //figure out if this is a Fault response or normal output from the server.
@@ -287,25 +287,25 @@ class Client extends Base {
             //  If the response is JSON then return it as-is.
             var json = _.isObject(body) ? body : tryJSONparse(body);
             if (json) {
-              return callback(null, response, json);
+              return callback(null, response, json, null, xml);
             }
           }
           //Reaches here for Fault processing as well since Fault is thrown as an error in xmlHandler.xmlToJson(..) function.
           error.response = response;
           error.body = body;
           self.emit('soapError', error);
-          return callback(error, response, body);
+          return callback(error, response, body, null, xml);
         }
 
         if (!output) {
           // one-way, no output expected
-          return callback(null, null, body, obj.Header);
+          return callback(null, null, body, obj.Header, xml);
         }
         if (typeof obj.Body !== 'object') {
           var error = new Error(g.f('Cannot parse response'));
           error.response = response;
           error.body = body;
-          return callback(error, obj, body);
+          return callback(error, obj, body, null, xml);
         }
 
         var outputBodyDescriptor = operationDescriptor.output.body;
@@ -335,7 +335,7 @@ class Client extends Base {
         }
         debug('client response. result: %j body: %j obj.Header: %j', result, body, obj.Header);
 
-        callback(null, result, body, obj.Header);
+        callback(null, result, body, obj.Header, xml);
       }
     }, headers, options, self);
 
