@@ -18,9 +18,12 @@ class Schema extends XSDElement {
     this.attributeGroups = {};
   }
 
-  merge(source) {
+  merge(source, isInclude) {
+    if (source === this) return this;
     assert(source instanceof Schema);
-    if (this.$targetNamespace === source.$targetNamespace) {
+    if (this.$targetNamespace === source.$targetNamespace ||
+      // xsd:include allows the target schema that does not have targetNamespace
+      (isInclude && source.$targetNamespace === undefined)) {
       _.merge(this.complexTypes, source.complexTypes);
       _.merge(this.simpleTypes, source.simpleTypes);
       _.merge(this.elements, source.elements);
@@ -28,6 +31,9 @@ class Schema extends XSDElement {
       _.merge(this.attributes, source.attributes);
       _.merge(this.attributeGroups, source.attributeGroups);
       _.merge(this.xmlns, source.xmlns);
+      if (Array.isArray(source.includes)) {
+        this.includes = _.uniq(this.includes.concat(source.includes));
+      }
     }
     return this;
   }
@@ -45,7 +51,8 @@ class Schema extends XSDElement {
           this.includes.push({
             namespace: child.$namespace || child.$targetNamespace
             || this.$targetNamespace,
-            location: location
+            location: location,
+            type: child.name // include or import
           });
         }
         break;

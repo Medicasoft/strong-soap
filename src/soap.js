@@ -16,6 +16,7 @@ function _requestWSDL(url, options, callback) {
     callback = options;
     options = {};
   }
+  _wsdlCache = options.WSDL_CACHE || _wsdlCache;
 
   var wsdl = _wsdlCache[url];
   if (wsdl) {
@@ -64,7 +65,7 @@ function listen(server, pathOrOptions, services, xml) {
   }
 
   var wsdl = new parser.WSDL(xml || services, uri, options);
-  return new Server(server, path, services, wsdl);
+  return new Server(server, path, services, wsdl, options);
 }
 
 exports.security = security;
