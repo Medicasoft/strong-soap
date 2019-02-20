@@ -645,6 +645,8 @@ class XMLHandler {
             // Convert the element value to an array
             top.object[elementName] = [val, current.object];
           }
+        } else if (current.descriptor && current.descriptor.isMany) {
+          top.object[elementName] = [current.object];
         } else {
           top.object[elementName] = current.object;
         }
